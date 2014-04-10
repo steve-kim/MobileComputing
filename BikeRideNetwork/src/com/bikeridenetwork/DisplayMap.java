@@ -1,16 +1,57 @@
 package com.bikeridenetwork;
 
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 public class DisplayMap extends FragmentActivity {
+	private GoogleMap map = null;
+	private LocationListener locationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_map);
+        
+        if (map == null) {
+        	 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+        	 map.setMyLocationEnabled(true);
+        	 LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        	 
+        	 Criteria criteria = new Criteria();
+        	 
+        	 String provider = locationManager.getBestProvider(criteria, true);
+        	 
+        	 Location location = locationManager.getLastKnownLocation(provider);
+        	 
+        	 if (location == null) {
+        		 locationListener = new LocationListener() {
+        			 public void onLocationChanged(Location location) {
+        				 double lat = location.getLatitude();
+        				 double lng = location.getLongitude();
+        				 LatLng latLng = new LatLng(lat, lng);
+        				 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+        			 }
+        		 };
+        		 
+        		 locationManager.requestLocationUpdates(provider, 20000, 0, (android.location.LocationListener) locationListener);
+        	 }
+        	 else {
+        		 double lat = location.getLatitude();
+        		 double lng = location.getLongitude();
+        		 LatLng latLng = new LatLng(lat, lng);
+        		 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+        	 }
+        }
+       
     }
 
 
