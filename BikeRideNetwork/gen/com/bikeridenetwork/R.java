@@ -182,6 +182,11 @@ containing a value of this type.
     public static final class dimen {
         /**  Default screen margins, per the Android Design guidelines. 
 
+         Example customization of dimensions originally defined in res/values/dimens.xml
+         (such as screen margins) for screens with more than 820dp of available width. This
+         would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively).
+    
+
          Customize dimensions originally defined in res/values/dimens.xml (such as
          screen margins) for sw720dp devices (e.g. 10" tablets) in landscape here.
     
@@ -221,22 +226,26 @@ containing a value of this type.
         public static final int ic_plusone_tall_off_client=0x7f02001c;
     }
     public static final class id {
-        public static final int action_settings=0x7f050006;
+        public static final int action_settings=0x7f050007;
         public static final int hybrid=0x7f050004;
+        public static final int map=0x7f050005;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int satellite=0x7f050002;
-        public static final int sign_in_button=0x7f050005;
+        public static final int sign_in_button=0x7f050006;
         public static final int terrain=0x7f050003;
     }
     public static final class integer {
         public static final int google_play_services_version=0x7f070000;
     }
     public static final class layout {
-        public static final int activity_main=0x7f030000;
+        public static final int activity_display_map=0x7f030000;
+        public static final int activity_main=0x7f030001;
+        public static final int fragment_display_map=0x7f030002;
     }
     public static final class menu {
-        public static final int main=0x7f0a0000;
+        public static final int display_map=0x7f0a0000;
+        public static final int main=0x7f0a0001;
     }
     public static final class string {
         public static final int action_settings=0x7f06001c;
@@ -339,6 +348,7 @@ containing a value of this type.
         /**  Location client code resources (prefix with location_client) 
          */
         public static final int location_client_powered_by_google=0x7f06001a;
+        public static final int title_activity_display_map=0x7f06001e;
     }
     public static final class style {
         /** 

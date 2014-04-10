@@ -72,6 +72,10 @@ com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks, com.googl
 		// TODO Auto-generated method stub
 		mSignInClicked = false;
 		Toast.makeText(this, "User is connected!", Toast.LENGTH_LONG).show();
+		
+		//We now jump to the meat of the application
+		Intent intent = new Intent(this, DisplayMap.class);
+		startActivity(intent);
 	}
 
 	@Override
