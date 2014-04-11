@@ -19,7 +19,7 @@ com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks, com.googl
 	private static final int RC_SIGN_IN = 0;
 
 	/* Client used to interact with Google APIs. */
-	private GoogleApiClient mGoogleApiClient;
+	private static GoogleApiClient mGoogleApiClient;
 
 	/* A flag indicating that a PendingIntent is in progress and prevents
 	 * us from starting further intents.
@@ -122,6 +122,10 @@ com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks, com.googl
 			mGoogleApiClient.connect();
 		}
 		
+	}
+	
+	public static GoogleApiClient getGoogleApiClient() {
+		return mGoogleApiClient;
 	}
 
 

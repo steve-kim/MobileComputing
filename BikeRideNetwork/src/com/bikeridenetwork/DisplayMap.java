@@ -6,15 +6,23 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 
 public class DisplayMap extends FragmentActivity {
 	private GoogleMap map = null;
 	private LocationListener locationListener;
+	
+	private static final String TAG = "DisplayMap";
+	
+	private static GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +77,12 @@ public class DisplayMap extends FragmentActivity {
         		 LatLng latLng = new LatLng(lat, lng);
         		 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         	 }
+        	 
+        	 mGoogleApiClient = MainActivity.getGoogleApiClient();
+        	 Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
+        	 Log.d(TAG, "Display name: " + currentPerson.getDisplayName());
+        	 Log.d(TAG, "Current location: " + currentPerson.getCurrentLocation());
+        	 
         }
        
     }
