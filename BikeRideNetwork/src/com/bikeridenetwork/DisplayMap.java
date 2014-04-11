@@ -2,11 +2,11 @@ package com.bikeridenetwork;
 
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -40,9 +40,28 @@ public class DisplayMap extends FragmentActivity {
         				 LatLng latLng = new LatLng(lat, lng);
         				 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         			 }
+
+					@Override
+					public void onStatusChanged(String provider, int status,
+							Bundle extras) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void onProviderEnabled(String provider) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void onProviderDisabled(String provider) {
+						// TODO Auto-generated method stub
+						
+					}
         		 };
         		 
-        		 locationManager.requestLocationUpdates(provider, 20000, 0, (android.location.LocationListener) locationListener);
+        		 locationManager.requestLocationUpdates(provider, 20000, 0, locationListener);
         	 }
         	 else {
         		 double lat = location.getLatitude();
