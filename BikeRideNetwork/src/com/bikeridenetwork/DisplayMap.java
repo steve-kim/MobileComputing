@@ -1,5 +1,13 @@
 package com.bikeridenetwork;
 
+import java.io.IOException;
+import java.net.URI;
+
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -19,6 +27,7 @@ import com.google.android.gms.plus.model.people.Person;
 public class DisplayMap extends FragmentActivity {
 	private GoogleMap map = null;
 	private LocationListener locationListener;
+	private String uploadApiUrl;
 	
 	private static final String TAG = "DisplayMap";
 	
@@ -81,10 +90,29 @@ public class DisplayMap extends FragmentActivity {
         	 mGoogleApiClient = MainActivity.getGoogleApiClient();
         	 Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
         	 Log.d(TAG, "Display name: " + currentPerson.getDisplayName());
-        	 Log.d(TAG, "Current location: " + currentPerson.getCurrentLocation());
-        	 
+        	 Log.d(TAG, "Current location: " + currentPerson.getCurrentLocation());        	 
         }
        
+    }
+    
+    public void updateLocation(double lat, double lng) {
+    	HttpClient httpClient = new DefaultHttpClient();
+
+		uploadApiUrl = "http://apt-connexus.appspot.com/UploadServletAPI?latitude=" + String.valueOf(lat) + "&longitude=" + String.valueOf(lng);
+		HttpPost postRequest = new HttpPost(uploadApiUrl);
+
+
+		//Send the data to the web service for upload
+		try {
+			httpClient.execute(postRequest);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
     }
 
 
