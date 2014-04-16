@@ -1,12 +1,7 @@
 package com.bikeridenetwork;
 
-import java.io.IOException;
-import java.net.URI;
-
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.location.Criteria;
 import android.location.Location;
@@ -15,6 +10,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,6 +28,9 @@ public class DisplayMap extends FragmentActivity {
 	private static final String TAG = "DisplayMap";
 	
 	private static GoogleApiClient mGoogleApiClient;
+	
+	private double lat;
+	private double lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +51,8 @@ public class DisplayMap extends FragmentActivity {
         	 if (location == null) {
         		 locationListener = new LocationListener() {
         			 public void onLocationChanged(Location location) {
-        				 double lat = location.getLatitude();
-        				 double lng = location.getLongitude();
+        				 lat = location.getLatitude();
+        				 lng = location.getLongitude();
         				 LatLng latLng = new LatLng(lat, lng);
         				 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         			 }
@@ -81,37 +80,43 @@ public class DisplayMap extends FragmentActivity {
         		 locationManager.requestLocationUpdates(provider, 20000, 0, locationListener);
         	 }
         	 else {
-        		 double lat = location.getLatitude();
-        		 double lng = location.getLongitude();
+        		 lat = location.getLatitude();
+        		 lng = location.getLongitude();
         		 LatLng latLng = new LatLng(lat, lng);
         		 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         	 }
         	 
         	 mGoogleApiClient = MainActivity.getGoogleApiClient();
-        	 Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
-        	 Log.d(TAG, "Display name: " + currentPerson.getDisplayName());
-        	 Log.d(TAG, "Current location: " + currentPerson.getCurrentLocation());        	 
+        	 
+        	//Creating timer which executes once after 30 seconds
+             Timer timer = new Timer();
+             timer.scheduleAtFixedRate(new updateLocation(), 0, 30000);
         }
        
     }
     
-    public void updateLocation(double lat, double lng) {
-    	HttpClient httpClient = new DefaultHttpClient();
+    private class updateLocation extends TimerTask {
+    	
+    	public void run() {
+    		System.out.println("Timer task executing every 30 seconds");
+    		
+    		/*HttpClient httpClient = new DefaultHttpClient();
 
-		uploadApiUrl = "http://apt-connexus.appspot.com/UploadServletAPI?latitude=" + String.valueOf(lat) + "&longitude=" + String.valueOf(lng);
-		HttpPost postRequest = new HttpPost(uploadApiUrl);
+    		uploadApiUrl = "http://apt-connexus.appspot.com/UploadServletAPI?latitude=" + String.valueOf(lat) + "&longitude=" + String.valueOf(lng);
+    		HttpPost postRequest = new HttpPost(uploadApiUrl);
 
 
-		//Send the data to the web service for upload
-		try {
-			httpClient.execute(postRequest);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    		//Send the data to the web service for upload
+    		try {
+    			httpClient.execute(postRequest);
+    		} catch (ClientProtocolException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}*/
+    	}
 
     }
 
