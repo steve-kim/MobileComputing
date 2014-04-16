@@ -1,5 +1,6 @@
 package com.bikeridenetwork;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -8,22 +9,25 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class DisplayMap extends FragmentActivity {
 	private GoogleMap map = null;
 	private LocationListener locationListener;
 	private String uploadApiUrl;
+	private Handler handler;
+	
+	private ArrayList<Marker> markers = new ArrayList(); 
 	
 	private static final String TAG = "DisplayMap";
 	
@@ -31,11 +35,18 @@ public class DisplayMap extends FragmentActivity {
 	
 	private double lat;
 	private double lng;
+	
+	//Dummy locations, delete when we get friends integrated
+	private LatLng friend1;
+	private LatLng friend2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_map);
+        
+        handler = new Handler(Looper.getMainLooper());
+        
         
         if (map == null) {
         	 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
@@ -53,6 +64,11 @@ public class DisplayMap extends FragmentActivity {
         			 public void onLocationChanged(Location location) {
         				 lat = location.getLatitude();
         				 lng = location.getLongitude();
+        				 
+        				 //Dummy locations, delete after integrating friends
+        				 friend1 = new LatLng(lat+5, lng+5);
+        				 friend2 = new LatLng(lat-5, lng-5);
+        				 
         				 LatLng latLng = new LatLng(lat, lng);
         				 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         			 }
@@ -82,11 +98,21 @@ public class DisplayMap extends FragmentActivity {
         	 else {
         		 lat = location.getLatitude();
         		 lng = location.getLongitude();
+        		 
+        		 //Dummy locations, delete after integrating friends
+        		 friend1 = new LatLng(lat+5, lng+5);
+				 friend2 = new LatLng(lat-5, lng-5);
+        		 
         		 LatLng latLng = new LatLng(lat, lng);
         		 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         	 }
         	 
         	 mGoogleApiClient = MainActivity.getGoogleApiClient();
+        	 
+        	 //Creating dummy positions for now
+        	 markers.add(map.addMarker(new MarkerOptions().position(friend1)));
+        	 markers.add(map.addMarker(new MarkerOptions().position(friend2)));
+        	 
         	 
         	//Creating timer which executes once after 30 seconds
              Timer timer = new Timer();
@@ -116,6 +142,16 @@ public class DisplayMap extends FragmentActivity {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
     		}*/
+
+    		handler.post(new Runnable() {
+				@Override
+				public void run() {
+					for (Marker m : markers) {
+	    				m.setPosition(new LatLng(m.getPosition().latitude+1, m.getPosition().longitude+1));
+	        		}
+				}
+    		});
+    		
     	}
 
     }
