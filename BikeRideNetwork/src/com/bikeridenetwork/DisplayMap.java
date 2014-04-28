@@ -1,8 +1,21 @@
 package com.bikeridenetwork;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 
 import android.location.Criteria;
 import android.location.Location;
@@ -20,6 +33,8 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.plus.Plus;
+import com.google.gson.Gson;
 
 public class DisplayMap extends FragmentActivity {
 	private GoogleMap map = null;
@@ -30,8 +45,12 @@ public class DisplayMap extends FragmentActivity {
 	private ArrayList<Marker> markers = new ArrayList(); 
 	
 	private static final String TAG = "DisplayMap";
+	private static final String WEB_APP_URL = "http://mluc.pythonanywhere.com/";
+	private static final String WEB_APP_GET_TEST = "http://mluc.pythonanywhere.com/test";
+	private static final String WEB_APP_POST_TEST = "http://mluc.pythonanywhere.com/start";
 	
 	private static GoogleApiClient mGoogleApiClient;
+	private static friendData myData;
 	
 	private double lat;
 	private double lng;
@@ -109,6 +128,11 @@ public class DisplayMap extends FragmentActivity {
         	 
         	 mGoogleApiClient = MainActivity.getGoogleApiClient();
         	 
+        	  if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
+        		    String currentEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
+        		    myData = new friendData(currentEmail, lat, lng); 
+        	 }
+        	 
         	 //Creating dummy positions for now
         	 markers.add(map.addMarker(new MarkerOptions().position(friend1)));
         	 markers.add(map.addMarker(new MarkerOptions().position(friend2)));
@@ -126,22 +150,37 @@ public class DisplayMap extends FragmentActivity {
     	public void run() {
     		System.out.println("Timer task executing every 30 seconds");
     		
-    		/*HttpClient httpClient = new DefaultHttpClient();
-
-    		uploadApiUrl = "http://apt-connexus.appspot.com/UploadServletAPI?latitude=" + String.valueOf(lat) + "&longitude=" + String.valueOf(lng);
-    		HttpPost postRequest = new HttpPost(uploadApiUrl);
-
-
+    		//HttpPost postRequest = new HttpPost(WEB_APP_POST_TEST);
+    		HttpPost postRequest = new HttpPost(WEB_APP_URL);
+    		Gson gson = new Gson();
+    		String json = gson.toJson(myData);
+    		System.out.println(json);
+    		try {
+				StringEntity se = new StringEntity(json);
+				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+				se.writeTo(System.out);
+				postRequest.setEntity(se);
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    		
+    		HttpClient httpClient = new DefaultHttpClient();
+    		
     		//Send the data to the web service for upload
     		try {
-    			httpClient.execute(postRequest);
+    			HttpResponse httpResponse = httpClient.execute(postRequest);
+    			HttpEntity entity = httpResponse.getEntity();
+    			System.out.println(EntityUtils.toString(entity));
     		} catch (ClientProtocolException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
-    		}*/
+    		}
 
     		handler.post(new Runnable() {
 				@Override
@@ -156,6 +195,21 @@ public class DisplayMap extends FragmentActivity {
 
     }
 
-
+    private class friendData {
+    	private String email;
+    	private String latitude;
+    	private String longitude;
+    	
+    	public friendData(String myEmail, double myLat, double myLng) {
+    		this.email = myEmail;
+    		this.latitude = String.valueOf(myLat);
+    		this.longitude = String.valueOf(myLng);
+    	}
+    	
+    	public void setMyLocation(double myLat, double myLng) {
+    		this.latitude = String.valueOf(myLat);
+    		this.longitude = String.valueOf(myLng);
+    	}
+    }
 
 }
