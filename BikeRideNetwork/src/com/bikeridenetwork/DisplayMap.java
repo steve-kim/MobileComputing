@@ -2,7 +2,9 @@ package com.bikeridenetwork;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -35,11 +37,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.plus.Plus;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class DisplayMap extends FragmentActivity {
 	private GoogleMap map = null;
 	private LocationListener locationListener;
 	private String uploadApiUrl;
+	private String currentEmail;
 	private Handler handler;
 	
 	private ArrayList<Marker> markers = new ArrayList(); 
@@ -66,7 +70,6 @@ public class DisplayMap extends FragmentActivity {
         
         handler = new Handler(Looper.getMainLooper());
         
-        
         if (map == null) {
         	 map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         	 map.setMyLocationEnabled(true);
@@ -78,64 +81,58 @@ public class DisplayMap extends FragmentActivity {
         	 
         	 Location location = locationManager.getLastKnownLocation(provider);
         	 
-        	 if (location == null) {
-        		 locationListener = new LocationListener() {
-        			 public void onLocationChanged(Location location) {
-        				 lat = location.getLatitude();
-        				 lng = location.getLongitude();
-        				 
-        				 //Dummy locations, delete after integrating friends
-        				 friend1 = new LatLng(lat+5, lng+5);
-        				 friend2 = new LatLng(lat-5, lng-5);
-        				 
-        				 LatLng latLng = new LatLng(lat, lng);
-        				 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-        			 }
-
-					@Override
-					public void onStatusChanged(String provider, int status,
-							Bundle extras) {
-						// TODO Auto-generated method stub
-						
-					}
-
-					@Override
-					public void onProviderEnabled(String provider) {
-						// TODO Auto-generated method stub
-						
-					}
-
-					@Override
-					public void onProviderDisabled(String provider) {
-						// TODO Auto-generated method stub
-						
-					}
-        		 };
-        		 
-        		 locationManager.requestLocationUpdates(provider, 20000, 0, locationListener);
-        	 }
-        	 else {
+        	 if (location != null) {
         		 lat = location.getLatitude();
         		 lng = location.getLongitude();
-        		 
-        		 //Dummy locations, delete after integrating friends
-        		 friend1 = new LatLng(lat+5, lng+5);
-				 friend2 = new LatLng(lat-5, lng-5);
         		 
         		 LatLng latLng = new LatLng(lat, lng);
         		 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         	 }
         	 
+        	 //if (location == null) {
+	        	locationListener = new LocationListener() {
+		        	public void onLocationChanged(Location location) {
+		        			lat = location.getLatitude();
+		        			lng = location.getLongitude();	
+
+		        			LatLng latLng = new LatLng(lat, lng);
+		        			map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+		        		}
+		
+						@Override
+						public void onStatusChanged(String provider, int status,
+								Bundle extras) {
+								//TODO Auto-generated method stub
+								
+						}
+		
+						@Override
+						public void onProviderEnabled(String provider) {
+							// TODO Auto-generated method stub
+							
+						}
+		
+						@Override
+						public void onProviderDisabled(String provider) {
+							// TODO Auto-generated method stub
+							
+						}
+		        	};
+	        		 
+	         //}
+        	 
+        	 locationManager.requestLocationUpdates(provider, 20000, 0, locationListener);
+        	 
         	 mGoogleApiClient = MainActivity.getGoogleApiClient();
         	 
         	  if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
-        		    String currentEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
+        		    currentEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
         		    myData = new friendData(currentEmail, lat, lng); 
         	 }
         	 
         	 //Creating dummy positions for now
-        	 markers.add(map.addMarker(new MarkerOptions().position(friend1)));
-        	 markers.add(map.addMarker(new MarkerOptions().position(friend2)));
+        	 //markers.add(map.addMarker(new MarkerOptions().position(friend1)));
+        	 //markers.add(map.addMarker(new MarkerOptions().position(friend2)));
         	 
         	 
         	//Creating timer which executes once after 30 seconds
@@ -146,19 +143,41 @@ public class DisplayMap extends FragmentActivity {
     }
     
     private class updateLocation extends TimerTask {
+    	private String webResults;
+    	private ArrayList<friendData> jsonObjects = new ArrayList();
     	
     	public void run() {
     		System.out.println("Timer task executing every 30 seconds");
     		
+    		updateData();
+    		jsonToObjects();
+
+    		
+    		
+    		handler.post(new Runnable() {
+				@Override
+				public void run() {
+					createMarkers();
+					/*for (Marker m : markers) {
+	    				m.setPosition(new LatLng(m.getPosition().latitude+1, m.getPosition().longitude+1));
+	        		}*/
+				}
+    		});
+    		
+    	}
+    	
+    	private void updateData() {
     		//HttpPost postRequest = new HttpPost(WEB_APP_POST_TEST);
     		HttpPost postRequest = new HttpPost(WEB_APP_URL);
+    		myData.latitude = String.valueOf(lat);
+    		myData.longitude = String.valueOf(lng);
     		Gson gson = new Gson();
     		String json = gson.toJson(myData);
-    		System.out.println(json);
+    		//System.out.println(json);
     		try {
 				StringEntity se = new StringEntity(json);
 				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-				se.writeTo(System.out);
+				//se.writeTo(System.out);
 				postRequest.setEntity(se);
 			} catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
@@ -173,7 +192,8 @@ public class DisplayMap extends FragmentActivity {
     		try {
     			HttpResponse httpResponse = httpClient.execute(postRequest);
     			HttpEntity entity = httpResponse.getEntity();
-    			System.out.println(EntityUtils.toString(entity));
+    			webResults = EntityUtils.toString(entity);
+    			//System.out.println(webResults);
     		} catch (ClientProtocolException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
@@ -181,18 +201,33 @@ public class DisplayMap extends FragmentActivity {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
     		}
-
-    		handler.post(new Runnable() {
-				@Override
-				public void run() {
-					for (Marker m : markers) {
-	    				m.setPosition(new LatLng(m.getPosition().latitude+1, m.getPosition().longitude+1));
-	        		}
-				}
-    		});
-    		
     	}
-
+    	
+    	private void jsonToObjects() {
+    		Gson gson = new Gson();
+    		
+    		//Convert the JSON string back to friendData object
+    		Type type = new TypeToken<List<friendData>>(){}.getType();
+    		jsonObjects = gson.fromJson(webResults, type);
+    	}
+    
+    	private void createMarkers() {
+    		for (Marker mark : markers) {
+    			mark.remove();
+    		}
+    		
+    		markers.clear();
+    		
+    		for (friendData friends : jsonObjects) {
+    			System.out.println(friends.email);
+    			System.out.println(friends.latitude);
+    			System.out.println(friends.longitude);
+    			
+    			LatLng friendLocation = new LatLng(Double.valueOf(friends.latitude), Double.valueOf(friends.longitude));
+    			
+    			markers.add(map.addMarker(new MarkerOptions().position(friendLocation)));
+    		}
+    	}
     }
 
     private class friendData {
